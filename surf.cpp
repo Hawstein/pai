@@ -14,10 +14,16 @@ static const int kMinHessian = 400;
 void GetFeature(const std::string& image_path,
                 SURFFeature *feature) {
   cv::Mat image_mat = cv::imread(image_path);
-  cv::SurfFeatureDetector detector(kMinHessian);
-  detector.detect(image_mat, feature->key_points);
-  cv::SurfDescriptorExtractor extractor;
-  extractor.compute(image_mat, feature->key_points, feature->descriptor);
+
+  // Detect key points
+  cv::SurfFeatureDetector(kMinHessian).detect(image_mat, feature->key_points);
+
+  // Extract descriptor
+  cv::SurfDescriptorExtractor().compute(image_mat,
+                                        feature->key_points,
+                                        feature->descriptor);
+
+  // Set ROI
   cv::Size size = image_mat.size();
   feature->roi.x = 0;
   feature->roi.y = 0;

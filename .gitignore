@@ -1,2 +1,5 @@
 *.o
 *.dSYM
+GTAGS
+GRTAGS
+GPATH

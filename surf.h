@@ -16,6 +16,8 @@ struct SURFFeature {
 
 void GetFeature(const std::string& image_path, SURFFeature* feature);
 
+void PrintFeature(const SURFFeature& feature);
+
 }
 
 #endif  // HACKDAY_SURF_H_

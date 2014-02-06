@@ -1,5 +1,6 @@
-#include "surf.h"
 #include <cstdio>
+#include "surf.h"
+
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -8,6 +9,6 @@ int main(int argc, char **argv) {
   }
   hackday::SURFFeature feature;
   hackday::GetFeature(argv[1], &feature);
-  printf("Width: %d, Height: %d", feature.roi.width, feature.roi.height);
+  hackday::PrintFeature(feature);
   return 0;
 }

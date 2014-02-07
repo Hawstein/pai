@@ -37,7 +37,9 @@ static bool IsQuadrangle(cv::Point2f p1,
                          cv::Point2f p3,
                          cv::Point2f p4);
 
-static bool IsOverlapped(cv::Point2f p1, cv::Point2f p2);
+static bool IsLine(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3);
+
+static bool IsOverlapped(cv::Point2d p1, cv::Point2d p2);
 
 
 void Timer::Start() {
@@ -77,7 +79,7 @@ bool SURFFeatureManager::FindMatchFeature(
        it != range.end();
        ++it) {
     std::map<std::string, SURFFeature*>::iterator sit = features.find(it->first);
-    if (sit == features.end()) return false;
+    if (sit == features.end()) continue;
     SURFFeature *feature = sit->second;
     if (MatchFeature(*feature, train)) {
       matched = feature;
@@ -292,12 +294,6 @@ bool SURFFeatureManager::MatchFeature(const SURFFeature& query_feature,
 
   perspectiveTransform(query_image_corners, train_image_corners, homography);
 
-  for (std::vector<cv::Point2f>::iterator it = train_image_corners.begin();
-       it != train_image_corners.end();
-       ++it) {
-    printf("Corner: <%f %f>\n", it->x, it->y);
-  }
-
   return IsQuadrangle(train_image_corners[0],
                       train_image_corners[1],
                       train_image_corners[2],
@@ -354,17 +350,29 @@ static bool IsQuadrangle(cv::Point2f p1,
                          cv::Point2f p2,
                          cv::Point2f p3,
                          cv::Point2f p4) {
-  return !(IsOverlapped(p1, p2) ||
-           IsOverlapped(p1, p3) ||
-           IsOverlapped(p1, p4) ||
-           IsOverlapped(p2, p3) ||
-           IsOverlapped(p2, p4) ||
-           IsOverlapped(p3, p4));
+  cv::Point2d pi1((int)p1.x, (int)p1.y);
+  cv::Point2d pi2((int)p2.x, (int)p2.y);
+  cv::Point2d pi3((int)p3.x, (int)p3.y);
+  cv::Point2d pi4((int)p4.x, (int)p4.y);
+  return !(IsOverlapped(pi1, pi2) ||
+           IsOverlapped(pi1, pi3) ||
+           IsOverlapped(pi1, pi4) ||
+           IsOverlapped(pi2, pi3) ||
+           IsOverlapped(pi2, pi4) ||
+           IsOverlapped(pi3, pi4) ||
+           IsLine(pi1, pi2, pi3) ||
+           IsLine(pi1, pi2, pi4) ||
+           IsLine(pi2, pi3, pi4));
 }
 
-static bool IsOverlapped(cv::Point2f p1, cv::Point2f p2) {
-  return abs(((int)p1.x - (int)p2.x)) <= kMinDistanceBetweenPoints &&
-    abs(((int)p1.y - (int)p2.y)) <= kMinDistanceBetweenPoints;
+static bool IsLine(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3) {
+  return (p1.x == p2.x && p2.x == p3.x) ||
+    (p1.y == p2.y && p2.y == p3.y);
+}
+
+static bool IsOverlapped(cv::Point2d p1, cv::Point2d p2) {
+  return abs((p1.x - p2.x)) <= kMinDistanceBetweenPoints &&
+    abs((p1.y - p2.y)) <= kMinDistanceBetweenPoints;
 }
 
 static void SplitFilename(const std::string& filename,

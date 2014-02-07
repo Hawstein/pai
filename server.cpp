@@ -27,8 +27,9 @@ static int MatchHandler(struct mg_connection *conn) {
                                  std::map<std::string, std::string>(),
                                  matched,
                                  &id)) {
-      printf("Find match, id is %s", id.c_str());
+      printf("Find match, id is %s\n", id.c_str());
       mg_send_status(conn, 200);
+      mg_printf_data(conn, id.c_str());
     } else {
       mg_send_status(conn, 400);
       mg_printf_data(conn, "");

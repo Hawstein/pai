@@ -1,12 +1,19 @@
 #ifndef HACKDAY_SURF_H_
 #define HACKDAY_SURF_H_
 
+#include <ctime>
 #include <vector>
+#include <map>
+#include <string>
+
 #include "opencv2/core/core.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
 namespace hackday {
+
+static const int kVideo = 0;
+static const int kEbook = 1;
 
 struct SURFFeature {
   std::vector<cv::KeyPoint> key_points;
@@ -15,12 +22,37 @@ struct SURFFeature {
   cv::Rect roi;
 };
 
-bool GetFeature(const std::string& image_path, SURFFeature* feature);
+class Timer {
+ public:
+  Timer() : start_(0) {}
+  void Start();
+  void Stop();
+  void Restart();
+  long elapsed_millis();
+ private:
+  clock_t start_;
+};
 
-bool MatchFeature(const SURFFeature& query_feature,
-                  const SURFFeature& train_feature);
+typedef std::map<int, std::map<std::string, SURFFeature*> > FeatureMap;
 
-void PrintFeature(const SURFFeature& feature);
+class SURFFeatureManager {
+ public:
+  bool LoadFeatureSet();
+  bool CalculateFeatureSet(const int media_type,
+                           const std::string& mage_folder);
+  bool GetFeature(const std::string& image_path, SURFFeature *feature);
+  bool MatchFeature(const SURFFeature& query, const SURFFeature& train);
+  bool FindMatchFeature(int media_type,
+                        const SURFFeature& train,
+                        const std::map<std::string, std::string>& range,
+                        SURFFeature *matched,
+                        std::string *id);
+  void PrintFeature(const SURFFeature& feature);
+ private:
+  FeatureMap feature_map_;
+};
+
+void StartHTTPServer();
 
 }
 

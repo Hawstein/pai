@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <sys/dir.h>
 #include "surf.h"
+#include "filter.h"
 
 using namespace hackday;
 
@@ -20,11 +21,15 @@ static int MatchHandler(struct mg_connection *conn) {
       mg_send_status(conn, 400);
       return MG_REQUEST_PROCESSED;
     }
+    const string data_name = "data.hd";
+    std::vector<Data> dataset;
+    Filter::LoadData(data_name, dataset);
+    std::map<std::string, std::string> candidates = Filter::GetCandidates(filepath, dataset);
     SURFFeature *matched = NULL;
     std::string id;
     if (manager.FindMatchFeature(atoi(type),
                                  feature,
-                                 std::map<std::string, std::string>(),
+                                 candidates,
                                  matched,
                                  &id)) {
       printf("Find match, id is %s\n", id.c_str());

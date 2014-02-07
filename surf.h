@@ -11,10 +11,14 @@ namespace hackday {
 struct SURFFeature {
   std::vector<cv::KeyPoint> key_points;
   cv::Mat descriptor;
+  cv::Mat image;
   cv::Rect roi;
 };
 
-void GetFeature(const std::string& image_path, SURFFeature* feature);
+bool GetFeature(const std::string& image_path, SURFFeature* feature);
+
+bool MatchFeature(const SURFFeature& query_feature,
+                  const SURFFeature& train_feature);
 
 void PrintFeature(const SURFFeature& feature);
 

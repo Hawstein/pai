@@ -1,6 +1,7 @@
 CPPFLAGS = -Wall -v
-LDFLAGS = -lopencv_core -lopencv_highgui -lopencv_features2d -lopencv_nonfree
-TARGETS = entry
+LDFLAGS = -lopencv_core -lopencv_calib3d -lopencv_highgui \
+	-lopencv_features2d -lopencv_nonfree -lopencv_flann
+TARGETS = entry feature_homography
 
 all: $(TARGETS)
 

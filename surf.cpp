@@ -70,19 +70,19 @@ bool SURFFeatureManager::FindMatchFeature(
     const std::map<std::string, std::string>& range,
     SURFFeature *matched,
     std::string *id) {
-  FeatureMap::Iterator fit = feature_map_.find(media_type);
-  if (it == feature_map_.end()) return false;
+  FeatureMap::iterator fit = feature_map_.find(media_type);
+  if (fit == feature_map_.end()) return false;
 
   std::map<std::string, SURFFeature*>& features = fit->second;
-  for (std::map<std::string, std::string>::iterator it = range.begin();
+  for (std::map<std::string, std::string>::const_iterator it = range.begin();
        it != range.end();
        ++it) {
     std::map<std::string, SURFFeature*>::iterator sit = features.find(it->first);
     if (sit == features.end()) return false;
     SURFFeature *feature = sit->second;
-    if (MatchFeature(*feature, feature)) {
+    if (MatchFeature(*feature, train)) {
       matched = feature;
-      *id = it.second;
+      *id = it->second;
       return true;
     }
   }

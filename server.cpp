@@ -1,3 +1,4 @@
+#include "mongoose.h"
 #include <cstdio>
 #include <dirent.h>
 #include <sys/dir.h>
@@ -23,7 +24,7 @@ static int MatchHandler(struct mg_connection *conn) {
     std::string id;
     manager.FindMatchFeature(atoi(type),
                              feature,
-                             const std::map<std::string, std::string> &range,
+                             std::map<std::string, std::string>(),
                              matched,
                              &id);
   }

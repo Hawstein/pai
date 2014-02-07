@@ -52,7 +52,7 @@ class SURFFeatureManager {
   FeatureMap feature_map_;
 };
 
-void StartHTTPServer();
+void StartHTTPServer(mg_handler_t handler);
 
 }
 

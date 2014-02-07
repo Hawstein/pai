@@ -27,6 +27,7 @@ static int MatchHandler(struct mg_connection *conn) {
                              std::map<std::string, std::string>(),
                              matched,
                              &id);
+    mg_send_status(conn, 200);
   }
   return MG_REQUEST_PROCESSED;
 }

@@ -22,12 +22,17 @@ static int MatchHandler(struct mg_connection *conn) {
     }
     SURFFeature *matched = NULL;
     std::string id;
-    manager.FindMatchFeature(atoi(type),
-                             feature,
-                             std::map<std::string, std::string>(),
-                             matched,
-                             &id);
-    mg_send_status(conn, 200);
+    if (manager.FindMatchFeature(atoi(type),
+                                 feature,
+                                 std::map<std::string, std::string>(),
+                                 matched,
+                                 &id)) {
+      printf("Find match, id is %s", id.c_str());
+      mg_send_status(conn, 200);
+    } else {
+      mg_send_status(conn, 400);
+      mg_printf_data(conn, "");
+    }
   }
   return MG_REQUEST_PROCESSED;
 }
@@ -38,7 +43,7 @@ int main(int argc, char **argv) {
   Timer timer;
   timer.Start();
   manager.LoadFeatureSet();
-  printf("Load time elapsed: %ld", timer.elapsed_millis());
+  printf("Load time elapsed: %ld\n", timer.elapsed_millis());
   StartHTTPServer(&MatchHandler);
   return 0;
 }

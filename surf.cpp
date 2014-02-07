@@ -72,7 +72,6 @@ bool SURFFeatureManager::FindMatchFeature(
     std::string *id) {
   FeatureMap::iterator fit = feature_map_.find(media_type);
   if (fit == feature_map_.end()) return false;
-
   std::map<std::string, SURFFeature*>& features = fit->second;
   for (std::map<std::string, std::string>::const_iterator it = range.begin();
        it != range.end();

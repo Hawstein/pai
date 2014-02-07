@@ -5,7 +5,7 @@ TARGETS = entry preprocess server
 
 all: $(TARGETS)
 
-$(TARGETS): surf.o thirdparty/mongoose/mongoose.o
+$(TARGETS): surf.o filter.o thirdparty/mongoose/mongoose.o
 
 clean:
 	rm -rf *.dSYM $(TARGETS) *.o

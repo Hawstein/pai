@@ -18,6 +18,10 @@ string Filter::PHashValue(Mat &src) {
 	 
     /* 第一步，缩放尺寸，可以为Size(32,32)或Size(8,8)，也可以更高，主要是为了提高计算效率*/
 	resize(img, img, Size(32,32));
+
+    // 顺时针旋转图像90度
+    transpose(img, dst);  
+    flip(dst, img, 1);
         
     /* 第二步，离散余弦变换，DCT系数求取*/
 	dct(img, dst);	

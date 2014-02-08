@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
   Timer timer;
   timer.Start();
   SURFFeatureManager manager;
-  manager.CalculateFeatureSet(kVideo, argv[1]);
+  manager.CalculateFeatureSet(atoi(argv[2]), argv[1]);
   printf("Calculate takes %ld ms", timer.elapsed_millis());
 
   return 0;

@@ -18,10 +18,11 @@
 namespace hackday {
 
 static const int kMinHessian = 400;
-static const int kMinDistanceBetweenPoints = 3;
 static const double kResizeFactor = 0.6;
 static const int kMaxWidth = 200;
 static const int kMaxHeight = 120;
+static const double kMaxDistance = sqrt(pow(kMaxWidth, 2) + pow(kMaxHeight, 2));
+static const int kMinDistanceBetweenPoints = (int) kMaxHeight * 0.15;
 static const int kOrginMaxWidth = (int) kMaxWidth / kResizeFactor;
 static const int kOrginMaxHeight = (int) kMaxHeight / kResizeFactor;
 static const char *kHTTPServerPort = "8090";
@@ -41,6 +42,10 @@ static bool IsLine(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3);
 
 static bool IsOverlapped(cv::Point2d p1, cv::Point2d p2);
 
+ static bool IsInRange(cv::Point2f p1,
+                       cv::Point2f p2,
+                       cv::Point2f p3,
+                       cv::Point2f p4);
 
 void Timer::Start() {
   start_ = clock();
@@ -70,24 +75,22 @@ bool SURFFeatureManager::FindMatchFeature(
     int media_type,
     const SURFFeature& train,
     const std::map<std::string, std::string>& range,
-    SURFFeature *matched,
-    std::string *id) {
+    std::vector<std::string> *ids) {
   FeatureMap::iterator fit = feature_map_.find(media_type);
   if (fit == feature_map_.end()) return false;
   std::map<std::string, SURFFeature*>& features = fit->second;
   for (std::map<std::string, std::string>::const_iterator it = range.begin();
        it != range.end();
        ++it) {
+    printf("Matching %s, %s\n", it->first.c_str(), it->second.c_str());
     std::map<std::string, SURFFeature*>::iterator sit = features.find(it->first);
     if (sit == features.end()) continue;
     SURFFeature *feature = sit->second;
-    if (MatchFeature(*feature, train)) {
-      matched = feature;
-      *id = it->second;
-      return true;
+    if (MatchFeature(train, *feature)) {
+      ids->push_back(it->second);
     }
   }
-  return false;
+  return !ids->empty();
 }
 
 bool SURFFeatureManager::LoadFeatureSet() {
@@ -157,6 +160,8 @@ bool SURFFeatureManager::CalculateFeatureSet(const int media_type,
     folder += "/";
   }
   DIR *dir = opendir(folder.c_str());
+  if (dir == NULL) return false;
+
   struct dirent *ent = NULL;
   while ((ent = readdir(dir)) != NULL) {
     if (strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0) continue;
@@ -281,7 +286,7 @@ bool SURFFeatureManager::MatchFeature(const SURFFeature& query_feature,
     dst_points.push_back(train_feature.key_points[good_matches[i].trainIdx].pt);
   }
 
-  cv::Mat homography = findHomography(src_points, dst_points, CV_FM_RANSAC);
+  cv::Mat homography = findHomography(src_points, dst_points, CV_RANSAC);
 
   // Get the corners from the query_image (the object to be "detected")
   std::vector<cv::Point2f> query_image_corners(4);
@@ -293,11 +298,22 @@ bool SURFFeatureManager::MatchFeature(const SURFFeature& query_feature,
   std::vector<cv::Point2f> train_image_corners(4);
 
   perspectiveTransform(query_image_corners, train_image_corners, homography);
+  printf("Corners: ");
+  for (std::vector<cv::Point2f>::iterator it = train_image_corners.begin();
+       it != train_image_corners.end();
+       ++it) {
+    printf("<%f %f> ", it->x, it->y);
+  }
+  printf("\n");
 
   return IsQuadrangle(train_image_corners[0],
                       train_image_corners[1],
                       train_image_corners[2],
-                      train_image_corners[3]);
+                      train_image_corners[3]) &&
+    IsInRange(train_image_corners[0],
+              train_image_corners[1],
+              train_image_corners[2],
+              train_image_corners[3]);
 }
 
 void SURFFeatureManager::PrintFeature(const SURFFeature& feature) {
@@ -365,14 +381,35 @@ static bool IsQuadrangle(cv::Point2f p1,
            IsLine(pi2, pi3, pi4));
 }
 
-static bool IsLine(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3) {
+static inline bool IsLine(cv::Point2d p1, cv::Point2d p2, cv::Point2d p3) {
   return (p1.x == p2.x && p2.x == p3.x) ||
     (p1.y == p2.y && p2.y == p3.y);
 }
 
-static bool IsOverlapped(cv::Point2d p1, cv::Point2d p2) {
+static inline bool IsOverlapped(cv::Point2d p1, cv::Point2d p2) {
   return abs((p1.x - p2.x)) <= kMinDistanceBetweenPoints &&
     abs((p1.y - p2.y)) <= kMinDistanceBetweenPoints;
+}
+
+static inline double GetDistance(cv::Point2f p1, cv::Point2f p2) {
+  return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+}
+
+static inline bool IsValidDistance(cv::Point2f p1, cv::Point2f p2) {
+  double distance = GetDistance(p1, p2);
+  return distance <= kMaxDistance && distance >= kMinDistanceBetweenPoints;
+}
+
+static inline bool IsInRange(cv::Point2f p1,
+                             cv::Point2f p2,
+                             cv::Point2f p3,
+                             cv::Point2f p4) {
+  return IsValidDistance(p1, p2) &&
+    IsValidDistance(p1, p3) &&
+    IsValidDistance(p1, p4) &&
+    IsValidDistance(p2, p3) &&
+    IsValidDistance(p2, p4) &&
+    IsValidDistance(p3, p4);
 }
 
 static void SplitFilename(const std::string& filename,

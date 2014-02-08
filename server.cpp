@@ -24,17 +24,29 @@ static int MatchHandler(struct mg_connection *conn) {
     const string data_name = "data.hd";
     std::vector<Data> dataset;
     Filter::LoadData(data_name, dataset);
-    std::map<std::string, std::string> candidates = Filter::GetCandidates(filepath, dataset);
-    SURFFeature *matched = NULL;
-    std::string id;
+    std::map<std::string, std::string> candidates =
+      Filter::GetCandidates(filepath, dataset);
+    if (candidates.empty()) {
+      printf("Candidate not found\n");
+      mg_send_status(conn, 400);
+      mg_printf_data(conn, "");
+      return MG_REQUEST_PROCESSED;
+    }
+    std::vector<std::string> ids;
     if (manager.FindMatchFeature(atoi(type),
                                  feature,
                                  candidates,
-                                 matched,
-                                 &id)) {
-      printf("Find match, id is %s\n", id.c_str());
+                                 &ids)) {
       mg_send_status(conn, 200);
-      mg_printf_data(conn, id.c_str());
+      for (std::vector<std::string>::iterator it = ids.begin();
+           it != ids.end();
+           ++it) {
+        printf("Find match, id is %s\n", it->c_str());
+        mg_printf_data(conn, it->c_str());
+        if (it != (ids.end() - 1)) {
+          mg_printf_data(conn, ",");
+        }
+      }
     } else {
       mg_send_status(conn, 400);
       mg_printf_data(conn, "");
@@ -48,6 +60,7 @@ int main(int argc, char **argv) {
 
   Timer timer;
   timer.Start();
+  //manager.CalculateFeatureSet(kVideo, "/Users/jiluo/projects/movie");
   manager.LoadFeatureSet();
   printf("Load time elapsed: %ld\n", timer.elapsed_millis());
   StartHTTPServer(&MatchHandler);

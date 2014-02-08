@@ -40,14 +40,13 @@ class SURFFeatureManager {
  public:
   bool LoadFeatureSet();
   bool CalculateFeatureSet(const int media_type,
-                           const std::string& mage_folder);
+                           const std::string& image_folder);
   bool GetFeature(const std::string& image_path, SURFFeature *feature);
   bool MatchFeature(const SURFFeature& query, const SURFFeature& train);
   bool FindMatchFeature(int media_type,
                         const SURFFeature& train,
                         const std::map<std::string, std::string>& range,
-                        SURFFeature *matched,
-                        std::string *id);
+                        std::vector<std::string> *ids);
   void PrintFeature(const SURFFeature& feature);
  private:
   FeatureMap feature_map_;

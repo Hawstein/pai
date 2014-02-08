@@ -248,28 +248,34 @@ void Filter::LoadData(const string data_name, vector<Data> &dataset) {
 }
 
 map<string, string> Filter::GetCandidates(const char* pic_path, const vector<Data> &dataset) {
-	Mat img = imread(pic_path);
-	string main_color = GetMainColor(img);
-    string phash_img = PHashValue(img);
-    // main color
-    vector<Data> subSet;
-    for (int i=0; i<dataset.size(); ++i) {
-    	Data d = dataset[i];
-    	if(d.mainColorFeature == main_color) {
-    		subSet.push_back(d);
-    	}
-    }
-    // calculate pHash distance
-    for (int i=0; i<subSet.size(); ++i) {
-    	subSet[i].pHashDistance = HanmingDistance(subSet[i].pHashFeature, phash_img);
-    }
-    // sort by pHash distance
-    sort(subSet.begin(), subSet.end(), cmp);
-    // return top 1000
+	// Mat img = imread(pic_path);
+	// string main_color = GetMainColor(img);
+ //    string phash_img = PHashValue(img);
+ //    // main color
+ //    vector<Data> subSet;
+ //    for (int i=0; i<dataset.size(); ++i) {
+ //    	Data d = dataset[i];
+ //    	if(d.mainColorFeature == main_color) {
+ //    		subSet.push_back(d);
+ //    	}
+ //    }
+ //    // calculate pHash distance
+ //    for (int i=0; i<subSet.size(); ++i) {
+ //    	subSet[i].pHashDistance = HanmingDistance(subSet[i].pHashFeature, phash_img);
+ //    }
+ //    // sort by pHash distance
+ //    sort(subSet.begin(), subSet.end(), cmp);
+ //    // return top 1000
+ //    map<string, string> cadidates;
+ //    for (int i=0; i<1000 && i<subSet.size(); ++i) {
+ //    	cadidates[subSet[i].md5] = subSet[i].videoId;
+ //    	cout<<subSet[i].md5<<" "<<subSet[i].videoId<<endl;
+ //    }
+
+    
     map<string, string> cadidates;
-    for (int i=0; i<1000 && i<subSet.size(); ++i) {
-    	cadidates[subSet[i].md5] = subSet[i].videoId;
-    	cout<<subSet[i].md5<<" "<<subSet[i].videoId<<endl;
+    for (int i=0; i<dataset.size(); ++i) {
+        cadidates[dataset[i].md5] = dataset[i].videoId;
     }
     return cadidates;
 }
